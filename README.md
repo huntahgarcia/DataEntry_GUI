@@ -1,4 +1,4 @@
-# DataEntry_GUI
+# Data Entry GUI
 
 Goal: Enter data into a GUI &amp; input into Excel 
 
