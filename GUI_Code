@@ -1,0 +1,224 @@
+import sys
+import uuid
+from PyQt5.QtWidgets import (QApplication, QWidget, QLineEdit, QComboBox, QLabel, 
+                             QVBoxLayout, QCalendarWidget, QCheckBox, QPushButton, QListWidget, QSpinBox)
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QDate
+import openpyxl
+
+class AppWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.window_width, self.window_height = 700, 500
+        self.setMinimumSize(self.window_width, self.window_height)
+        self.setWindowTitle('Bakery Data Entry')
+
+        # Set window icon with the complete path
+        icon_path = '/Users/name/Downloads/Bakery Shop.jpeg'
+        self.setWindowIcon(QIcon(icon_path))
+
+        self.setStyleSheet('''
+                           QWidget {
+                               font-size: 14px;
+                           }
+        ''')
+
+        # Create main layout
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        # Initialize UI elements
+        self.init_ui()
+
+    def init_ui(self):
+        # Customer Name
+        self.customer_name_label = QLabel("Customer Name:")
+        self.customer_name = QLineEdit()
+        self.layout.addWidget(self.customer_name_label)
+        self.layout.addWidget(self.customer_name)
+
+        # Customer Contact
+        self.customer_contact_label = QLabel("Customer Contact:")
+        self.customer_contact = QLineEdit()
+        self.layout.addWidget(self.customer_contact_label)
+        self.layout.addWidget(self.customer_contact)
+
+        # Address
+        self.address_label = QLabel("Address:")
+        self.address = QLineEdit()
+        self.layout.addWidget(self.address_label)
+        self.layout.addWidget(self.address)
+
+        # Order
+        self.order_label = QLabel("Order:")
+        self.order = QComboBox()
+        # Add options for order
+        self.order.addItems(["Regular Sourdough", "Specialty Sourdough", "6 Cinnamon Rolls", "12 Cinnamon Rolls"])
+        self.layout.addWidget(self.order_label)
+        self.layout.addWidget(self.order)
+
+        # Quantity
+        self.quantity_label = QLabel("Quantity:")
+        self.quantity = QSpinBox()
+        self.quantity.setMinimum(1)
+        self.layout.addWidget(self.quantity_label)
+        self.layout.addWidget(self.quantity)
+
+        # Add Item Button
+        self.btn_add_item = QPushButton('&Add Item')
+        self.btn_add_item.clicked.connect(self.add_item)
+        self.layout.addWidget(self.btn_add_item)
+
+        # List of Items
+        self.items_list = QListWidget()
+        self.layout.addWidget(self.items_list)
+
+        # Remove Item Button
+        self.btn_remove_item = QPushButton('&Remove Item')
+        self.btn_remove_item.clicked.connect(self.remove_item)
+        self.layout.addWidget(self.btn_remove_item)
+
+        # Payment Method
+        self.payment_method_label = QLabel("Payment Method:")
+        self.payment_method = QComboBox()
+        # Add options for payment method
+        self.payment_method.addItems(["Cash", "Credit Card", "Debit Card", "Online Payment"])
+        # Set default payment method to "Online Payment"
+        self.payment_method.setCurrentText("Online Payment")
+        self.layout.addWidget(self.payment_method_label)
+        self.layout.addWidget(self.payment_method)
+
+        # Payment Status
+        self.payment_status_label = QLabel("Payment Status:")
+        self.payment_status = QComboBox()
+        # Add options for payment status
+        self.payment_status.addItems(["Pending", "Paid"])
+        # Set default payment status to "Pending"
+        self.payment_status.setCurrentText("Pending")
+        self.layout.addWidget(self.payment_status_label)
+        self.layout.addWidget(self.payment_status)
+
+        # Order Status
+        self.order_status_label = QLabel("Order Status:")
+        self.order_status = QComboBox()
+        # Add options for order status
+        self.order_status.addItems(["Pending", "In Progress", "Completed"])
+        # Set default order status to "Pending"
+        self.order_status.setCurrentText("Pending")
+        self.layout.addWidget(self.order_status_label)
+        self.layout.addWidget(self.order_status)
+
+        # Calendar widgets
+        self.start = QCalendarWidget()
+        self.start.setGridVisible(True)
+        self.end = QCalendarWidget()
+        self.end.setGridVisible(True)
+        self.end.setStyleSheet("""
+            QCalendarWidget QTableView {
+                selection-background-color: #ff4d39;
+                selection-color: white;
+                }
+        """)
+        self.end.setSelectedDate(QDate.currentDate().addDays(2))
+        self.end.selectionChanged.connect(self.check_date_selection)
+
+        self.layout.addWidget(self.start)
+        self.layout.addWidget(self.end)
+
+        self.needs_attention = QCheckBox("Needs Attention")
+        self.layout.addWidget(self.needs_attention)
+
+        # Submit and Reset buttons
+        self.btn_submit = QPushButton('&Submit')
+        self.btn_submit.clicked.connect(self.add_entry)
+        self.layout.addWidget(self.btn_submit)
+
+        self.btn_reset = QPushButton('&Reset')
+        self.btn_reset.clicked.connect(self.reset)
+        self.layout.addWidget(self.btn_reset)
+
+    def add_item(self):
+        item = self.order.currentText()
+        quantity = self.quantity.value()
+        self.items_list.addItem(f"{item} - Quantity: {quantity}")
+
+    def remove_item(self):
+        for item in self.items_list.selectedItems():
+            self.items_list.takeItem(self.items_list.row(item))
+
+    def check_date_selection(self):
+        if self.start.selectedDate() > self.end.selectedDate():
+            print('Start date cannot be after end date')  # Debugging message
+            self.end.setSelectedDate(self.start.selectedDate().addDays(2))
+
+    def reset(self):
+        self.customer_name.clear()
+        self.customer_contact.clear()
+        self.address.clear()
+        self.order.setCurrentIndex(0)
+        self.items_list.clear()
+        self.payment_method.setCurrentText("Online Payment")
+        self.payment_status.setCurrentText("Pending")
+        self.order_status.setCurrentText("Pending")
+        self.start.setSelectedDate(QDate.currentDate())
+        self.end.setSelectedDate(QDate.currentDate().addDays(2))
+        self.needs_attention.setChecked(False)
+        self.quantity.setValue(1)
+
+    def add_entry(self):
+        try:
+            # Load the existing workbook
+            file_path = '/Users/name/Downloads/Bakery_Template.xlsx'
+            wb = openpyxl.load_workbook(file_path)
+            ws = wb.active
+
+            # Generate customer ID and order number
+            customer_id = str(uuid.uuid4())[:8]
+            order_number = ws.max_row  # Simple order number, assuming no header
+
+            # Insert data into the worksheet for each item
+            for i in range(self.items_list.count()):
+                # Find the next empty row
+                row = ws.max_row + 1
+
+                # Extract item and quantity
+                item_text = self.items_list.item(i).text()
+                item, quantity = item_text.split(' - Quantity: ')
+
+                # Convert quantity to a number
+                quantity = int(quantity)  # Assuming the quantity is an integer
+
+                # Insert data into the worksheet
+                ws[f'B{row}'] = self.start.selectedDate().toString('yyyy-MM-dd')  # Order date
+                ws[f'C{row}'] = self.end.selectedDate().toString('yyyy-MM-dd')  # Delivery date
+                ws[f'F{row}'] = self.order_status.currentText()  # Order status
+                ws[f'J{row}'] = self.payment_status.currentText()  # Payment status
+                ws[f'K{row}'] = self.payment_method.currentText()  # Payment method
+                ws[f'M{row}'] = self.customer_name.text()  # Customer name
+                ws[f'N{row}'] = self.customer_contact.text()  # Customer contact
+                ws[f'O{row}'] = self.address.text()  # Delivery address
+                ws[f'P{row}'] = 'Yes' if self.needs_attention.isChecked() else 'No'  # Needs attention
+                ws[f'D{row}'] = item  # Order item
+                ws[f'E{row}'] = quantity  # Quantity (as a number)
+                ws[f'G{row}'] = order_number  # Order number
+                ws[f'L{row}'] = customer_id  # Customer ID
+
+            # Save the workbook
+            wb.save(file_path)
+            print("Data written successfully to the file.")
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+def main():
+    app = QApplication(sys.argv)
+    app.setStyle('fusion')  # Set the application style
+    window = AppWindow()
+    window.show()
+    try:
+        sys.exit(app.exec())
+    except SystemExit:
+        print("Closing Window")
+
+if __name__ == '__main__':
+    main()
