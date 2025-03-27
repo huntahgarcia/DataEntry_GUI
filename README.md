@@ -13,7 +13,7 @@ This program provides a user-friendly graphical interface for bakery order manag
 - **Attention Tracking**: Option to flag orders that need special attention.
 
 ## 3. Requirements/Dependencies
-1. **Python 3.x**: Ensure you have Python installed.
+1. **Python 3.10.9: Ensure you have Python installed.
 2. **PyQt5**: For building the graphical user interface (GUI).
 3. **Openpyxl**: For reading and writing Excel files.
 
