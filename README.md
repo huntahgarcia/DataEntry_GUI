@@ -1,4 +1,4 @@
-# Bakery Data Entry Program
+# Bakery Data Entry 
 
 ## 1. Overview
 This program provides a user-friendly graphical interface for bakery order management. It allows users to input customer details, order information, payment, and order status. The collected data is then automatically saved into an Excel file for further tracking and processing. This tool streamlines the data entry process for bakery owners and staff, ensuring that customer orders are properly recorded and organized.
